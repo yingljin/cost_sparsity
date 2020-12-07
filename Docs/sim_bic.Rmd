@@ -48,6 +48,16 @@ load("../Data/sim_model_once.RData")
 ```{r, message=FALSE}
 pe_df1 <- sim_pe1 %>% bind_rows() %>% melt()
 cpp_df1 <- sim_cpp1 %>% bind_rows() %>% melt()
+
+# FDR
+DR1 <- data.frame("Lasso" = bind_cols(lapply(sim_disc1, function(x)x$Lasso)) %>% apply(1, mean),
+                 "CRL"= bind_cols(lapply(sim_disc1, function(x)x$CRL)) %>% apply(1, mean),
+                 "GL"= bind_cols(lapply(sim_disc1, function(x)x$GL)) %>% apply(1, mean),
+                 "CGL" = bind_cols(lapply(sim_disc1, function(x)x$CGL)) %>% apply(1, mean), 
+                 "rCGL"= bind_cols(lapply(sim_disc1, function(x)x$rCGL)) %>% apply(1, mean)) %>%
+  mutate(group = rep(1:10, each = 5), .before = 1)
+
+DR1
 ```
 
 
@@ -112,6 +122,15 @@ plot(this_fit1$rcgl[[4]], log.l = T, xlim = c(1, -10))
 ```{r message=FALSE}
 pe_df2 <- sim_pe2 %>% bind_rows() %>% melt()
 cpp_df2 <- sim_cpp2 %>% bind_rows() %>% melt()
+
+# DR
+DR2 <- data.frame("Lasso" = bind_cols(lapply(sim_disc2, function(x)x$Lasso)) %>% apply(1, mean),
+                 "CRL"= bind_cols(lapply(sim_disc2, function(x)x$CRL)) %>% apply(1, mean),
+                 "GL"= bind_cols(lapply(sim_disc2, function(x)x$GL)) %>% apply(1, mean),
+                 "CGL" = bind_cols(lapply(sim_disc2, function(x)x$CGL)) %>% apply(1, mean), 
+                 "rCGL"= bind_cols(lapply(sim_disc2, function(x)x$rCGL)) %>% apply(1, mean)) %>%
+  mutate(group = rep(1:10, each = 5), .before = 1)
+DR2
 ```
 
 
@@ -173,6 +192,16 @@ plot(this_fit2$rcgl[[4]], log.l = T, xlim = c(1, -10))
 ```{r message=FALSE}
 pe_df3 <- sim_pe3 %>% bind_rows() %>% melt()
 cpp_df3 <- sim_cpp3 %>% bind_rows() %>% melt()
+
+# DR
+DR3 <- data.frame("Lasso" = bind_cols(lapply(sim_disc3, function(x)x$Lasso)) %>% apply(1, mean),
+                 "CRL"= bind_cols(lapply(sim_disc3, function(x)x$CRL)) %>% apply(1, mean),
+                 "GL"= bind_cols(lapply(sim_disc3, function(x)x$GL)) %>% apply(1, mean),
+                 "CGL" = bind_cols(lapply(sim_disc3, function(x)x$CGL)) %>% apply(1, mean), 
+                 "rCGL"= bind_cols(lapply(sim_disc3, function(x)x$rCGL)) %>% apply(1, mean)) %>%
+  mutate(group = rep(1:10, each = 5), .before = 1)
+
+DR3
 ```
 
 
