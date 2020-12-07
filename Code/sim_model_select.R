@@ -12,6 +12,11 @@ library(reshape2)
 
 set.seed(12345)
 
+# sim_list <- sim_data1[[1]]
+# c_grp <-  rnorm(10, 15, runif(1, 0.25, 5)
+# grp <- grp_ind
+# rs <- gamma
+
 ##### function to fit model on each data set #####
 
 sim_fit <- function(sim_list, c_grp, grp, rs, family = "gaussian"){
