@@ -15,6 +15,7 @@ load("Data/sim_data.RData")
 
 ##### function to fit model on each data set #####
 
+
 sim_fit <- function(sim_list, c_grp, grp, rs, family = "gaussian"){
   
   # set up
