@@ -1,0 +1,229 @@
+---
+title: "Simulation with model selection by BIC"
+output:
+  html_document:
+    highlight: espresso
+    number_sections: yes
+    theme: yeti
+    toc: yes
+    toc_depth: 2
+    toc_float: yes
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+
+library(ncvreg)
+library(grpreg)
+library(hdrm)
+library(dplyr)
+library(reshape2)
+
+set.seed(123)
+```
+
+
+# Simulation set up
+
+- Sample size for both training and testing set is 200
+- 50 covariates, 10 groups, 5 covariates each group
+- group 1 and 3 are important, with beta = c(1, 2, 3, 4, 5)
+- signal-to-noise ratio = 1
+- use BIC to select lambda
+- use prediction error to evaluate prediction
+- tuning parameter of weight: 0, .25, .5, .75, 1, no scale. just used cost for weight
+- cost randomly generated with each simulation
+- solution path 
+
+```{r}
+load("../Data/sim_model_select.RData")
+load("../Data/sim_model_once.RData")
+```
+
+
+# zero correlation for both inter and intra group
+
+## Results
+
+```{r, message=FALSE}
+pe_df1 <- sim_pe1 %>% bind_rows() %>% melt()
+cpp_df1 <- sim_cpp1 %>% bind_rows() %>% melt()
+```
+
+
+```{r, message=FALSE, fig.width=10}
+par(mfrow = c(1,2))
+boxplot(value ~ variable, data = pe_df1, ylab = "prediction error")
+boxplot(value ~ variable, data = cpp_df1, ylab = "Cost per prediction")
+
+pe_df1 %>% group_by(variable) %>% summarise(ave_pe = mean(value),
+                                            med_pe = median(value)) 
+cpp_df1 %>% group_by(variable) %>% summarise(ave_cpp = mean(value),
+                                             med_cpp = median(value)) 
+```
+
+## Solution path
+
+```{r, fig.height=7, fig.width=12}
+par(mfrow = c(2, 2))
+# lasso
+plot(log(this_fit1$lasso$lambda), BIC(this_fit1$lasso), xlim = c(1, -10), main = "Lasso")
+plot(this_fit1$lasso, log.l = T, xlim = c(1, -10))
+
+# cost-ranked lasso
+plot(log(this_fit1$crl$lambda), BIC(this_fit1$crl), xlim = c(1, -10), main = "CRL")
+plot(this_fit1$crl, log.l = T, xlim = c(1, -10))
+```
+
+
+```{r, fig.height=7, fig.width=12}
+par(mfrow = c(2, 2))
+# group lasso
+plot(log(this_fit1$gl$lambda), BIC(this_fit1$gl), xlim = c(1, -10), main = "GL")
+plot(this_fit1$gl, log.l = T, xlim = c(1, -10))
+# cost group lasso
+plot(log(this_fit1$cgl$lambda), BIC(this_fit1$cgl), xlim = c(1, -10), main = "CGL")
+plot(this_fit1$cgl, log.l = T, xlim = c(1, -10))
+```
+
+
+```{r, fig.height=7, fig.width=12}
+# rCGL
+par(mfrow = c(2, 2))
+plot(log(this_fit1$rcgl[[1]]$lambda), BIC(this_fit1$rcgl[[1]]), xlim = c(1, -10), main = "rCGL (r = 0)")
+plot(this_fit1$rcgl[[1]], log.l = T, xlim = c(1, -10))
+# rcost group lasso, r = 0.25
+plot(log(this_fit1$rcgl[[2]]$lambda), BIC(this_fit1$rcgl[[2]]), xlim = c(1, -10), main = "rCGL (r = 0.25)")
+plot(this_fit1$rcgl[[2]], log.l = T, xlim = c(1, -10))
+```
+
+```{r, fig.height=7, fig.width=12}
+par(mfrow = c(2, 2))
+plot(log(this_fit1$rcgl[[3]]$lambda), BIC(this_fit1$rcgl[[3]]), xlim = c(1, -10), main = "rCGL (r = 0.5)")
+plot(this_fit1$rcgl[[3]], log.l = T, xlim = c(1, -10))
+plot(log(this_fit1$rcgl[[4]]$lambda), BIC(this_fit1$rcgl[[4]]), xlim = c(1, -10), main = "rCGL (r = 0.75)")
+plot(this_fit1$rcgl[[4]], log.l = T, xlim = c(1, -10))
+```
+
+# zero between-group, 0.5 within group correlaion
+
+## Results
+
+```{r message=FALSE}
+pe_df2 <- sim_pe2 %>% bind_rows() %>% melt()
+cpp_df2 <- sim_cpp2 %>% bind_rows() %>% melt()
+```
+
+
+```{r message=FALSE, fig.width=10}
+par(mfrow = c(1,2))
+boxplot(value ~ variable, data = pe_df2, ylab = "prediction error")
+boxplot(value ~ variable, data = cpp_df2, ylab = "Cost per prediction")
+pe_df2 %>% group_by(variable) %>% summarise(ave_pe = mean(value),
+                                            med_pe = median(value)) 
+cpp_df2 %>% group_by(variable) %>% summarise(ave_cpp = mean(value),
+                                             med_cpp = median(value)) 
+```
+
+## Solution path
+
+```{r, fig.height=7, fig.width=12}
+par(mfrow = c(2, 2))
+# lasso
+plot(log(this_fit2$lasso$lambda), BIC(this_fit2$lasso), xlim = c(1, -10), main = "Lasso")
+plot(this_fit2$lasso, log.l = T, xlim = c(1, -10))
+# ranked cost lasso
+plot(log(this_fit2$crl$lambda), BIC(this_fit2$crl), xlim = c(1, -10), main = "CRL")
+plot(this_fit2$crl, log.l = T, xlim = c(1, -10))
+```
+
+```{r, fig.height=7, fig.width=12}
+par(mfrow = c(2, 2))
+# group lasso
+plot(log(this_fit2$gl$lambda), BIC(this_fit2$gl), xlim = c(1, -10), main = "GL")
+plot(this_fit2$gl, log.l = T, xlim = c(1, -10))
+# cost group lasso
+plot(log(this_fit2$cgl$lambda), BIC(this_fit2$cgl), xlim = c(1, -10), main = "CGL (r = 1)")
+plot(this_fit2$cgl, log.l = T, xlim = c(1, -10))
+```
+
+```{r, fig.height=7, fig.width=12}
+# rCGL
+par(mfrow = c(2, 2))
+# rcost group lasso, r = 0.25
+plot(log(this_fit2$rcgl[[1]]$lambda), BIC(this_fit2$rcgl[[1]]), xlim = c(1, -10), main = "rCGL (r = 0)")
+plot(this_fit2$rcgl[[1]], log.l = T, xlim = c(1, -10))
+# rcost group lasso, r = 0.25
+plot(log(this_fit2$rcgl[[2]]$lambda), BIC(this_fit2$rcgl[[2]]), xlim = c(1, -10), main = "rCGL (r = 0.25)")
+plot(this_fit2$rcgl[[2]], log.l = T, xlim = c(1, -10))
+```
+
+```{r, fig.height=7, fig.width=12}
+par(mfrow = c(2, 2))
+plot(log(this_fit2$rcgl[[3]]$lambda), BIC(this_fit2$rcgl[[3]]), xlim = c(1, -10), main = "rCGL (r = 0.5)")
+plot(this_fit2$rcgl[[3]], log.l = T, xlim = c(1, -10))
+plot(log(this_fit2$rcgl[[4]]$lambda), BIC(this_fit2$rcgl[[4]]), xlim = c(1, -8), main = "rCGL (r = 0.75)")
+plot(this_fit2$rcgl[[4]], log.l = T, xlim = c(1, -10))
+```
+
+# 0.5 correlation for both between and within groups
+
+## Results
+
+```{r message=FALSE}
+pe_df3 <- sim_pe3 %>% bind_rows() %>% melt()
+cpp_df3 <- sim_cpp3 %>% bind_rows() %>% melt()
+```
+
+
+```{r message=FALSE, fig.width=10}
+par(mfrow = c(1,2))
+boxplot(value ~ variable, data = pe_df3, ylab = "prediction error")
+boxplot(value ~ variable, data = cpp_df3, ylab = "Cost per prediction")
+pe_df3 %>% group_by(variable) %>% summarise(ave_pe = mean(value),
+                                            med_pe = median(value)) 
+cpp_df3 %>% group_by(variable) %>% summarise(ave_cpp = mean(value),
+                                             med_cpp = median(value)) 
+```
+
+## Solution path
+
+```{r, fig.height=7, fig.width=12}
+par(mfrow = c(2, 2))
+# lasso
+plot(log(this_fit3$lasso$lambda), BIC(this_fit3$lasso), xlim = c(1, -10), main = "Lasso")
+plot(this_fit3$lasso, log.l = T, xlim = c(1, -10))
+# cost ranked lasso
+plot(log(this_fit3$crl$lambda), BIC(this_fit3$crl), xlim = c(1, -10), main = "CRL")
+plot(this_fit3$crl, log.l = T, xlim = c(1, -10))
+```
+
+```{r, fig.height=7, fig.width=12}
+par(mfrow = c(2, 2))
+# group lasso
+plot(log(this_fit3$gl$lambda), BIC(this_fit3$gl), xlim = c(1, -10), main = "GL")
+plot(this_fit3$gl, log.l = T, xlim = c(1, -10))
+# cost group lasso
+plot(log(this_fit3$cgl$lambda), BIC(this_fit3$cgl), xlim = c(1, -10), main = "CGL (r = 1)")
+plot(this_fit3$cgl, log.l = T)
+```
+
+```{r, fig.height=7, fig.width=12}
+# rCGL
+par(mfrow = c(2, 2))
+# rcost group lasso, r = 0
+plot(log(this_fit3$rcgl[[1]]$lambda), BIC(this_fit3$rcgl[[1]]), xlim = c(1, -10), main = "rCGL (r = 0)")
+plot(this_fit3$rcgl[[1]], log.l = T, xlim = c(1, -10))
+# rcost group lasso, r = 0.25
+plot(log(this_fit3$rcgl[[2]]$lambda), BIC(this_fit3$rcgl[[2]]), xlim = c(1, -10), main = "rCGL (r = 0.25)")
+plot(this_fit3$rcgl[[2]], log.l = T, xlim = c(1, -10))
+```
+
+```{r, fig.height=7, fig.width=12}
+par(mfrow = c(2, 2))
+plot(log(this_fit3$rcgl[[3]]$lambda), BIC(this_fit3$rcgl[[3]]), xlim = c(1, -8), main = "rCGL (r = 0.5)")
+plot(this_fit3$rcgl[[3]], log.l = T)
+plot(log(this_fit3$rcgl[[4]]$lambda), BIC(this_fit3$rcgl[[4]]), xlim = c(1, -8), main = "rCGL (r = 0.75)")
+plot(this_fit3$rcgl[[4]], log.l = T)
+```
+

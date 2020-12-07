@@ -1,0 +1,8 @@
+# session
+.Rproj.user
+.Rhistory
+
+# Data By R
+.RData
+.Ruserdata
+Data/
